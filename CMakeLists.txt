@@ -79,10 +79,10 @@ endif(JPEG_FOUND)
 
 target_link_libraries(uvc ${LIBUSB_LIBRARY_NAMES})
 
-add_executable(example src/example.c)
-target_link_libraries(example uvc ${LIBUSB_LIBRARY_NAMES} opencv_highgui
-  opencv_imgproc
-  opencv_core	)
+#add_executable(example src/example.c)
+#target_link_libraries(example uvc ${LIBUSB_LIBRARY_NAMES} opencv_highgui
+#  opencv_imgproc
+#  opencv_core	)
 
 install(TARGETS uvc
   EXPORT libuvcTargets
