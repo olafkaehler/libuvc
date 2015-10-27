@@ -77,6 +77,7 @@ enum uvc_frame_format {
   UVC_FRAME_FORMAT_INVR, //Depth 
   UVC_FRAME_FORMAT_INVZ, //Depth 
   UVC_FRAME_FORMAT_INRI, //Depth (24 bit)
+  UVC_FRAME_FORMAT_Z16,  //Depth (16 bit)
   /** Number of formats understood */
   UVC_FRAME_FORMAT_COUNT,
 };

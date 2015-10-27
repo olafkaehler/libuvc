@@ -123,6 +123,8 @@ struct format_table_entry *_get_format_entry(enum uvc_frame_format format) {
       {UVC_FRAME_FORMAT_MJPEG})
     FMT(UVC_FRAME_FORMAT_MJPEG,
       {'M',  'J',  'P',  'G'})
+    FMT(UVC_FRAME_FORMAT_Z16,
+      {'Z',  '1',  '6',  ' ', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
 
     default:
       return NULL;
