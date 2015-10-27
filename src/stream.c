@@ -428,6 +428,87 @@ found:
   return uvc_probe_stream_ctrl(devh, ctrl);
 }
 
+/** Get a negotiated streaming control block for some common parameters.
+ * @ingroup streaming
+ *
+ * @param[in] devh Device handle
+ * @param[in,out] ctrl Control block
+ * @param[in] frame_desc Frame descriptor for the required format
+ * @param[in] interval Frame interval as per frame_desc
+ */
+uvc_error_t uvc_get_stream_ctrl_frame_desc(
+    uvc_device_handle_t *devh,
+    uvc_stream_ctrl_t *ctrl,
+    const struct uvc_frame_desc *desired_frame,
+    uint32_t desired_interval) {
+  uvc_streaming_interface_t *stream_if;
+
+  const uvc_format_desc_t *desired_format = desired_frame->parent;
+  const uvc_streaming_interface_t *desired_if = desired_format->parent;
+
+  /* make sure the user provided a valid descriptor and interval */
+  DL_FOREACH(devh->info->stream_ifs, stream_if) {
+    uvc_format_desc_t *format;
+    if (stream_if != desired_if) continue;
+
+    DL_FOREACH(stream_if->format_descs, format) {
+      uvc_frame_desc_t *frame;
+
+      if (format != desired_format) continue;
+      DL_FOREACH(format->frame_descs, frame) {
+        if (frame != desired_frame) continue;
+
+        uint32_t *interval;
+
+        if (frame->intervals) {
+          for (interval = frame->intervals; *interval; ++interval) {
+            // allow a fps rate of zero to mean "accept first rate available"
+            if (*interval == desired_interval || desired_interval == 0) {
+
+              /* get the max values -- we need the interface number to be able
+                 to do this */
+              ctrl->bInterfaceNumber = stream_if->bInterfaceNumber;
+              uvc_query_stream_ctrl( devh, ctrl, 1, UVC_GET_MAX);
+
+              ctrl->bmHint = (1 << 0); /* don't negotiate interval */
+              ctrl->bFormatIndex = format->bFormatIndex;
+              ctrl->bFrameIndex = frame->bFrameIndex;
+              ctrl->dwFrameInterval = *interval;
+
+              goto found;
+            }
+          }
+        } else {
+          uint32_t interval_offset = desired_interval - frame->dwMinFrameInterval;
+
+          if (desired_interval >= frame->dwMinFrameInterval
+              && desired_interval <= frame->dwMaxFrameInterval
+              && !(interval_offset
+                   && (interval_offset % frame->dwFrameIntervalStep))) {
+
+            /* get the max values -- we need the interface number to be able
+               to do this */
+            ctrl->bInterfaceNumber = stream_if->bInterfaceNumber;
+            uvc_query_stream_ctrl( devh, ctrl, 1, UVC_GET_MAX);
+
+            ctrl->bmHint = (1 << 0);
+            ctrl->bFormatIndex = format->bFormatIndex;
+            ctrl->bFrameIndex = frame->bFrameIndex;
+            ctrl->dwFrameInterval = desired_interval;
+
+            goto found;
+          }
+        }
+      }
+    }
+  }
+
+  return UVC_ERROR_INVALID_MODE;
+
+found:
+  return uvc_probe_stream_ctrl(devh, ctrl);
+}
+
 /** @internal
  * Negotiate streaming parameters with the device
  *

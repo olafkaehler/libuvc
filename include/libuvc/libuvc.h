@@ -517,6 +517,13 @@ uvc_error_t uvc_get_stream_ctrl_format_size(
     int fps
     );
 
+uvc_error_t uvc_get_stream_ctrl_frame_desc(
+    uvc_device_handle_t *devh,
+    uvc_stream_ctrl_t *ctrl,
+    const struct uvc_frame_desc *frame_desc,
+    uint32_t interval
+    );
+
 const uvc_format_desc_t *uvc_get_format_descs(uvc_device_handle_t* );
 
 uvc_error_t uvc_probe_stream_ctrl(
